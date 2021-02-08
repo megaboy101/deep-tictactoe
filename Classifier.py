@@ -1,12 +1,19 @@
 import numpy as np
-from sklearn import neighbors, model_selection, metrics, preprocessing
+from sklearn import neighbors, svm, model_selection, metrics
 
 class Classifier:
   def __init__(self):
     A = np.loadtxt('./datasets-part1/tictac_final.txt')
     X = A[:,:9]
     y = list(np.concatenate(A[:, 9:]).flat) # Formats y into a single vector
+
+    print("K-NEAREST NEIGHBORS")
+    print("===================================")
     self.k_nearest(X, y)
+    print("")
+    print("LINEAR SVM")
+    print("===================================")
+    self.linear_svc(X, y)
   
   def confusion_matrix(self, matrix):
     head_template = "{0:10}{1:13}{2:13}"
@@ -18,7 +25,7 @@ class Classifier:
     print(body_template.format("ACTUAL +1", matrix[1][0], matrix[1][1]))
   
   def k_nearest(self, X, y):
-    # Split training and testing data 80/20 at random. 
+    # Split data into training and testing sets 80/20 at random
     # Shuffle dataset before splitting
     X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True)
 
@@ -31,6 +38,21 @@ class Classifier:
 
     # Generate a confusion matrix to display model accuracy on testing data
     # matrix = metrics.confusion_matrix(y_test, y_pred)
+    matrix = [ row / np.linalg.norm(row) for row in metrics.confusion_matrix(y_test, y_pred) ]
+    self.confusion_matrix(matrix)
+    print("")
+    print("Model Accuracy: %0.6f" % metrics.accuracy_score(y_test, y_pred))
+
+  def linear_svc(self, X, y):
+    # Split data into training and testing sets 80/20 at random
+    # Shuffle dataset before splitting
+    X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.2, random_state=42, shuffle=True)
+
+    classifier = svm.SVC(kernel="linear", C=1)
+    classifier.fit(X_train, y_train)
+
+    y_pred = classifier.predict(X_test)
+
     matrix = [ row / np.linalg.norm(row) for row in metrics.confusion_matrix(y_test, y_pred) ]
     self.confusion_matrix(matrix)
     print("")
